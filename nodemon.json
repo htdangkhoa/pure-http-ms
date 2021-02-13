@@ -1,0 +1,12 @@
+{
+  "restartable": "rs",
+  "execMap": {
+    "js": "babel-node"
+  },
+  "ext": "js,json",
+  "watch": ["src"],
+  "ignore": [".git", "node_modules/**/node_modules"],
+  "events": {
+    "start": "cls || clear"
+  }
+}
