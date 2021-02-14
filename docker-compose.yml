@@ -15,27 +15,30 @@ services:
     depends_on:
       - auth
 
-  article:
-    build:
-      context: .
-    command: yarn dev article
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    depends_on:
-      - nats
-    ports:
-      - 8080
-
   auth:
     build:
       context: .
     command: yarn dev auth
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
+      - node_modules:/usr/src/app/node_modules
     depends_on:
       - nats
-      - article
     ports:
       - 8080
+
+  stage:
+    build:
+      context: .
+    command: yarn dev stage
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    depends_on:
+      - nats
+      - auth
+    ports:
+      - 8080
+
+volumes:
+  node_modules:

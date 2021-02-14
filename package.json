@@ -13,9 +13,12 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.12.13",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "mongoose": "^5.11.16",
     "nats": "^1.4.12",
-    "pure-http": "^2.0.3"
+    "pure-http": "^2.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.16",

@@ -1,23 +1,12 @@
-import Gateway from 'core/Gateway';
+import Service from 'core/Service';
 
-class AuthSrv extends Gateway {
-  async ping(req, res) {
-    try {
-      const result = await this.communication.callTo('ArticleSrv', 'pong', { name: 'Khoa' });
-
-      res.json({ hello: 'world', result });
-    } catch (error) {
-      res.json({ error });
-    }
+class AuthSrv extends Service {
+  async register(payload, done) {
+    return done({ name: 'register' });
   }
 
-  routesRegistration() {
-    return {
-      ping: {
-        handler: this.ping,
-        method: 'GET',
-      },
-    };
+  async login(payload, done) {
+    return done({ name: 'login' });
   }
 }
 
