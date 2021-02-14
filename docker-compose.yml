@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  nats:
+    image: nats
+    expose:
+      - 4222
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8080:80
+    depends_on:
+      - auth
+
+  article:
+    build:
+      context: .
+    command: yarn dev article
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - nats
+    ports:
+      - 8080
+
+  auth:
+    build:
+      context: .
+    command: yarn dev auth
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - nats
+      - article
+    ports:
+      - 8080

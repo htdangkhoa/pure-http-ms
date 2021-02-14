@@ -10,7 +10,7 @@ class Communication {
   #natsClient;
 
   constructor() {
-    this.#natsClient = Nats.connect({ url: 'nats://0.0.0.0:4222/', json: true });
+    this.#natsClient = Nats.connect({ url: process.env.NATS_URL, json: true });
 
     this.#natsClient.on('connect', () => {
       console.log('Nats connected');

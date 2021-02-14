@@ -8,11 +8,15 @@ class Gateway extends Service {
     this.app = PureHttp();
   }
 
+  routesRegistration() {
+    throw new Error(`'routesRegistration' must be override.`);
+  }
+
   start() {
     this.app.listen(8080, () => {
       console.log('...');
 
-      this.subscribe(true);
+      this.subscribe();
     });
   }
 }

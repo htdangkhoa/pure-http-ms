@@ -10,6 +10,15 @@ class AuthSrv extends Gateway {
       res.json({ error });
     }
   }
+
+  routesRegistration() {
+    return {
+      ping: {
+        handler: this.ping,
+        method: 'GET',
+      },
+    };
+  }
 }
 
 export default AuthSrv;

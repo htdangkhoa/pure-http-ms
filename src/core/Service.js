@@ -13,10 +13,14 @@ class Service {
 
   subscribe() {
     this.communication.subscribe(this.serviceName, (payload, done) => {
-      const { nats, ...data } = payload;
+      try {
+        const { nats, ...data } = payload;
 
-      if (typeof this[nats?.functionName] === 'function') {
-        this[nats?.functionName]?.(data, done);
+        if (typeof this[nats?.functionName] === 'function') {
+          this[nats?.functionName]?.(data, done);
+        }
+      } catch (error) {
+        done(error);
       }
     });
   }
