@@ -9,7 +9,7 @@ class Stage extends Gateway {
   routesRegistration() {
     return {
       ping: { svc: DEFAULT_GATEWAY },
-      register: { svc: AUTH_SVC_NAME },
+      register: { svc: AUTH_SVC_NAME, method: 'POST' },
       login: { svc: AUTH_SVC_NAME },
     };
   }

@@ -21,14 +21,20 @@ class Communication {
     const topic = `${serviceName}.*`;
 
     const subscriberId = this.#natsClient.subscribe(topic, (payload, replyTo) => {
-      callback(payload, (responder) => {
-        if (responder instanceof Error) {
-          const data = new Nats.NatsError(responder.message, SERVICE_ERROR, responder.stack || responder.chainedError);
+      callback(payload, (response) => {
+        if (response instanceof Error) {
+          const error = new Nats.NatsError(response.message, SERVICE_ERROR, response.stack || response.chainedError);
 
-          return this.#natsClient.publish(replyTo, data);
+          return this.#natsClient.publish(replyTo, {
+            success: false,
+            error,
+          });
         }
 
-        return this.#natsClient.publish(replyTo, responder);
+        return this.#natsClient.publish(replyTo, {
+          success: true,
+          data: response,
+        });
       });
     });
 

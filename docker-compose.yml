@@ -1,6 +1,48 @@
 version: '3'
 
 services:
+  mongodb0:
+    image: mongo:4.0-xenial
+    hostname: mongodb0
+    ports:
+      - 27018:27017
+    depends_on:
+      - mongodb1
+      - mongodb2
+    volumes:
+      - ./mongo:/mongo
+      - mongodb_data0:/data/db
+    restart: always
+    command: --bind_ip_all --replSet "rs0" --oplogSize 128
+
+  mongodb1:
+    image: mongo:4.0-xenial
+    hostname: mongodb1
+    ports:
+      - 27019:27017
+    volumes:
+      - mongodb_data1:/data/db
+    restart: always
+    command: --bind_ip_all --replSet "rs0" --oplogSize 128
+
+  mongodb2:
+    image: mongo:4.0-xenial
+    hostname: mongodb2
+    ports:
+      - 27020:27017
+    volumes:
+      - mongodb_data2:/data/db
+    restart: always
+    command: --bind_ip_all --replSet "rs0" --oplogSize 128
+
+  adminmongo:
+    image: 'mrvautin/adminmongo'
+    environment:
+      # work around but this might break in the future https://github.com/mrvautin/adminMongo/issues/229
+      - HOST=0.0.0.0
+    ports:
+      - 1234:1234
+
   nats:
     image: nats
     expose:
@@ -36,9 +78,12 @@ services:
       - node_modules:/usr/src/app/node_modules
     depends_on:
       - nats
-      - auth
+      - mongodb0
     ports:
       - 8080
 
 volumes:
   node_modules:
+  mongodb_data0:
+  mongodb_data1:
+  mongodb_data2:

@@ -9,11 +9,6 @@ COPY package.json .
 RUN yarn
 
 # Bundle app source
-# COPY .env-cmdrc.json .
 COPY . .
 
-RUN yarn build
-
-# Exports
-# EXPOSE 8080
-# CMD ["npm", "run", "dev", "article"]
+# RUN yarn build
