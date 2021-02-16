@@ -1,4 +1,5 @@
 import Nats from 'nats';
+import { isNil } from 'utils';
 
 const MAX_LISTENER = 1;
 
@@ -22,19 +23,26 @@ class Communication {
 
     const subscriberId = this.#natsClient.subscribe(topic, (payload, replyTo) => {
       callback(payload, (response) => {
+        const data = { success: false };
+
         if (response instanceof Error) {
           const error = new Nats.NatsError(response.message, SERVICE_ERROR, response.stack || response.chainedError);
 
-          return this.#natsClient.publish(replyTo, {
-            success: false,
-            error,
-          });
+          error.originCode = response.code || response.constructor.name.toUpperCase();
+
+          data.success = false;
+          data.error = error;
+
+          return this.#natsClient.publish(replyTo, data);
         }
 
-        return this.#natsClient.publish(replyTo, {
-          success: true,
-          data: response,
-        });
+        data.success = false;
+
+        if (!isNil(response)) {
+          data.data = response;
+        }
+
+        return this.#natsClient.publish(replyTo, data);
       });
     });
 
@@ -44,7 +52,7 @@ class Communication {
   callTo(serviceName, functionName, payload) {
     const topic = `${serviceName}.${functionName}`;
 
-    let _payload = payload || {};
+    const _payload = payload || {};
 
     if (!_payload?.nats?.serviceName) {
       _payload.nats = { serviceName, functionName };
@@ -54,11 +62,13 @@ class Communication {
       this.#natsClient.requestOne(topic, _payload, { max: MAX_LISTENER }, TIMEOUT_MS, (responder) => {
         if (responder instanceof Nats.NatsError && responder.code === Nats.REQ_TIMEOUT) {
           return reject(responder);
-        } else if (responder.code === SERVICE_ERROR) {
-          return reject(responder);
-        } else {
-          return resolve(responder);
         }
+
+        if (responder.code === SERVICE_ERROR) {
+          return reject(responder);
+        }
+
+        return resolve(responder);
       });
     });
   }

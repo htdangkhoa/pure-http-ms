@@ -16,6 +16,15 @@ class _Schema extends Schema {
         lastName: {
           type: Types.String,
         },
+        email: {
+          type: Types.String,
+          required: true,
+          unique: true,
+        },
+        password: {
+          type: Types.String,
+          required: true,
+        },
       },
       {
         timestamps: true,

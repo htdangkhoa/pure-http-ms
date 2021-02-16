@@ -69,6 +69,18 @@ services:
     ports:
       - 8080
 
+  user:
+    build:
+      context: .
+    command: yarn dev user
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    depends_on:
+      - nats
+    ports:
+      - 8080
+
   stage:
     build:
       context: .

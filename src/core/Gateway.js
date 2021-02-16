@@ -47,12 +47,34 @@ class Gateway extends Service {
           query: req.query,
           body: req.body,
           headers: req.headers,
+          cookies: req.cookies,
           fromGateway: this.serviceName,
         };
 
         const response = await this.communication.callTo(route.svc, functionName, payload);
 
-        return res.status(200).json(response);
+        const { cookies, cookie, ...data } = response.data || {};
+
+        const setCookie = (name, value) => {
+          if (typeof name === 'string' && typeof value === 'string') {
+            res.cookie(name, value);
+          }
+        };
+
+        setCookie(cookie?.name, cookie?.value);
+
+        if (Array.isArray(cookies)) {
+          for (let j = 0; j < cookies.length; j += 1) {
+            const _cookie = cookies[j];
+
+            setCookie(_cookie?.name, _cookie?.value);
+          }
+        }
+
+        return res.status(200).json({
+          ...response,
+          data,
+        });
       });
     }
   }
