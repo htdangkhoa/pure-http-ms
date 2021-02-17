@@ -28,7 +28,7 @@ class Communication {
         if (response instanceof Error) {
           const error = new Nats.NatsError(response.message, SERVICE_ERROR, response.stack || response.chainedError);
 
-          error.originCode = response.code || response.constructor.name.toUpperCase();
+          error.originName = response.code || response.constructor.name || error.constructor.name;
 
           data.success = false;
           data.error = error;

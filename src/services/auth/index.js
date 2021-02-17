@@ -46,7 +46,7 @@ class AuthSrv extends Service {
 
       const { password, ...authUser } = user.toJSON();
 
-      const token = sign(authUser, '30s');
+      const token = sign(authUser);
 
       return done({ cookie: { name: 'token', value: token }, token });
     } catch (error) {

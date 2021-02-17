@@ -1,10 +1,13 @@
 import Communication from './Communication';
+import Logger from './Logger';
 
 class Service {
   constructor({ name }) {
     this.serviceName = name;
 
     this.communication = new Communication();
+
+    this.logger = new Logger(process.env.NODE_ENV === 'production');
   }
 
   start() {
