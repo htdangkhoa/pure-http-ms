@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 rsconf = {
   _id: 'rs0',
   members: [
@@ -10,3 +12,5 @@ rsconf = {
 rs.initiate(rsconf);
 
 rs.conf();
+
+rs.secondaryOk();
