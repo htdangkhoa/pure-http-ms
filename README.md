@@ -20,9 +20,6 @@
 
   `openssl rsa -in keys/jwtRS512.key -pubout -outform PEM -out keys/jwtRS512.key.pub`.
 
-- `docker-compose up --build -d`.
-- Login to `mongodb_0` container to config replicas: `docker exec -it mongodb_0 sh`.
-- Setup mongo replicas: `./mongo/setup.sh`.
 - `docker-compose up -d`.
 
 ## After changes in `package.json`, do:

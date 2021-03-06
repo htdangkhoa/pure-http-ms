@@ -1,12 +1,18 @@
 version: '3'
 
 services:
+  base_node:
+    image: base_node
+    build:
+      context: .
+    volumes:
+      - .:/usr/src/app
+    container_name: base_node
+
   mongodb0:
     image: mongo:4.0-xenial
     container_name: mongodb_0
     hostname: mongodb0
-    ports:
-      - 27018:27017
     depends_on:
       - mongodb1
       - mongodb2
@@ -20,8 +26,6 @@ services:
     image: mongo:4.0-xenial
     container_name: mongodb_1
     hostname: mongodb1
-    ports:
-      - 27019:27017
     volumes:
       - mongodb_data1:/data/db
     restart: always
@@ -31,8 +35,6 @@ services:
     image: mongo:4.0-xenial
     container_name: mongodb_2
     hostname: mongodb2
-    ports:
-      - 27020:27017
     volumes:
       - mongodb_data2:/data/db
     restart: always
@@ -65,36 +67,26 @@ services:
 
   auth:
     container_name: auth_service
-    build:
-      context: .
+    image: base_node:latest
     command: yarn dev auth
-    volumes:
-      - .:/usr/src/app
     depends_on:
+      - base_node
       - nats
-    ports:
-      - 8080
 
   user:
     container_name: user_service
-    build:
-      context: .
+    image: base_node:latest
     command: yarn dev user
-    volumes:
-      - .:/usr/src/app
     depends_on:
+      - base_node
       - nats
-    ports:
-      - 8080
 
   stage:
     container_name: stage_gateway
-    build:
-      context: .
+    image: base_node:latest
     command: yarn dev stage
-    volumes:
-      - .:/usr/src/app
     depends_on:
+      - base_node
       - nats
       - mongodb0
     ports:

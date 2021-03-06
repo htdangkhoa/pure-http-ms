@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 import Service from 'core/Service';
 import UserModel from 'models/user.model';
