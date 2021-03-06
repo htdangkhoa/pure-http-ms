@@ -1,6 +1,8 @@
 # Microservices template
 
-![architecture.svg](./arts/architecture.svg)
+<p align='center'>
+  <img src='./arts/architecture.svg' alt='architecture.svg' />
+</p>
 
 ## Getting Started
 
