@@ -71,6 +71,13 @@ class Gateway extends Service {
           }
         }
 
+        /** Response structure.
+         * {
+         *  success: false,
+         *  data: null,
+         *  error: null
+         * }
+         */
         return res.status(200).json({
           ...response,
           data,
