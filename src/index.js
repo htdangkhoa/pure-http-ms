@@ -11,13 +11,13 @@ dotenv.config();
     useFindAndModify: true,
   });
 
-  console.log('mongodb connected.');
+  console.log('Mongodb connected.');
 
   const serviceName = process.argv[2];
 
   const { default: Service } = await import(`./services/${serviceName}`);
 
-  const service = new Service({ name: serviceName });
+  const service = new Service(serviceName);
 
   service.start();
 })();

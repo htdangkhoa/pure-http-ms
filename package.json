@@ -21,7 +21,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.19",
     "nats": "^1.4.12",
-    "pure-http": "^3.0.1"
+    "pure-http": "^3.0.1",
+    "redis": "^3.0.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.0",
@@ -36,8 +37,7 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.1.0",
     "eslint-import-resolver-babel-module": "^5.2.0",
-    "eslint-plugin-import": "^2.22.1",
-    "nodemon": "^2.0.7"
+    "eslint-plugin-import": "^2.22.1"
   },
   "engines": {
     "yarn": ">= 1"

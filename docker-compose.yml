@@ -7,17 +7,14 @@ services:
       context: .
     volumes:
       - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
     container_name: base_node
 
   mongodb0:
     image: mongo:4.0-xenial
     container_name: mongodb_0
     hostname: mongodb0
-    depends_on:
-      - mongodb1
-      - mongodb2
     volumes:
-      - ./mongo:/mongo
       - mongodb_data0:/data/db
     restart: always
     command: --bind_ip_all --replSet "rs0" --oplogSize 128
@@ -40,6 +37,18 @@ services:
     restart: always
     command: --bind_ip_all --replSet "rs0" --oplogSize 128
 
+  mongo_setup:
+    container_name: mongo_setup
+    image: mongo:4.0-xenial
+    restart: on-failure
+    volumes:
+      - ./mongo:/mongo
+    command: 'mongo/setup.sh'
+    depends_on:
+      - mongodb0
+      - mongodb1
+      - mongodb2
+
   adminmongo:
     image: 'mrvautin/adminmongo'
     container_name: adminmongo
@@ -48,6 +57,12 @@ services:
       - HOST=0.0.0.0
     ports:
       - 1234:1234
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    expose:
+      - 6379
 
   nats:
     image: nats
@@ -65,10 +80,30 @@ services:
     depends_on:
       - auth
 
+  # Gateway
+  stage:
+    container_name: stage_gateway
+    image: base_node:latest
+    command: nodemon --watch src/core --watch src/services/stage src/index.js stage
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    depends_on:
+      - base_node
+      - nats
+      - mongo_setup
+      - redis
+    ports:
+      - 8080
+
+  # Services
   auth:
     container_name: auth_service
     image: base_node:latest
-    command: yarn dev auth
+    command: nodemon --watch src/core --watch src/services/auth src/index.js auth
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
     depends_on:
       - base_node
       - nats
@@ -76,21 +111,13 @@ services:
   user:
     container_name: user_service
     image: base_node:latest
-    command: yarn dev user
+    command: nodemon --watch src/core --watch src/services/user src/index.js user
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
     depends_on:
       - base_node
       - nats
-
-  stage:
-    container_name: stage_gateway
-    image: base_node:latest
-    command: yarn dev stage
-    depends_on:
-      - base_node
-      - nats
-      - mongodb0
-    ports:
-      - 8080
 
 volumes:
   node_modules:

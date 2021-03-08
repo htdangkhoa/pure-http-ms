@@ -2,7 +2,7 @@ import Communication from './Communication';
 import Logger from './Logger';
 
 class Service {
-  constructor({ name }) {
+  constructor(name) {
     this.serviceName = name;
 
     this.communication = new Communication();

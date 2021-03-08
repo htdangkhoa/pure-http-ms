@@ -5,10 +5,13 @@ import bodyParser from 'body-parser';
 import { DEFAULT_GATEWAY } from 'constants/service-names';
 
 import Service from './Service';
+import timeoutMiddleware from './middlewares/timeout';
+
+const TIMEOUT_MS = 30000;
 
 class Gateway extends Service {
-  constructor({ name }) {
-    super({ name });
+  constructor(name) {
+    super(name);
 
     this.app = PureHttp();
 
@@ -19,6 +22,7 @@ class Gateway extends Service {
     this.app.use(cors({ credentials: true }));
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
+    this.app.use(timeoutMiddleware(TIMEOUT_MS));
   }
 
   routesRegistration() {

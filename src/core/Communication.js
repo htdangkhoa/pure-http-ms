@@ -14,14 +14,14 @@ class Communication {
     this.#natsClient = Nats.connect({ url: process.env.NATS_URL, json: true });
 
     this.#natsClient.on('connect', () => {
-      console.log('Nats connected');
+      console.log('Nats connected.');
     });
   }
 
   subscribe(serviceName, callback) {
     const topic = `${serviceName}.*`;
 
-    const subscriberId = this.#natsClient.subscribe(topic, (payload, replyTo) => {
+    const subscriberId = this.#natsClient.subscribe(topic, { queue: serviceName }, (payload, replyTo) => {
       callback(payload, (response) => {
         const data = { success: false };
 
