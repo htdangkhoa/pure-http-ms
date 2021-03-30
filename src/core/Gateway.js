@@ -1,13 +1,11 @@
 import PureHttp from 'pure-http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import timeout from 'connect-timeout';
 
 import { DEFAULT_GATEWAY } from 'constants/service-names';
 
 import Service from './Service';
-import timeoutMiddleware from './middlewares/timeout';
-
-const TIMEOUT_MS = 30000;
 
 class Gateway extends Service {
   constructor(name) {
@@ -19,10 +17,12 @@ class Gateway extends Service {
   }
 
   loadMiddlewares() {
-    this.app.use(cors({ credentials: true }));
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use(timeoutMiddleware(TIMEOUT_MS));
+    this.app.use([
+      cors({ credentials: true }),
+      bodyParser.json(),
+      bodyParser.urlencoded({ extended: true }),
+      timeout('30s'),
+    ]);
   }
 
   routesRegistration() {

@@ -57,6 +57,8 @@ services:
       - HOST=0.0.0.0
     ports:
       - 1234:1234
+    depends_on:
+      - mongo_setup
 
   redis:
     image: redis:alpine
@@ -65,7 +67,7 @@ services:
       - 6379
 
   nats:
-    image: nats
+    image: nats:alpine
     container_name: nats
     expose:
       - 4222
@@ -78,7 +80,7 @@ services:
     ports:
       - 8080:80
     depends_on:
-      - auth
+      - stage
 
   # Gateway
   stage:

@@ -1,55 +1,70 @@
-import Nats from 'nats';
+import * as Nats from 'nats';
 import { isNil } from 'utils';
 
-const MAX_LISTENER = 1;
-
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 30000;
 
 const SERVICE_ERROR = 'ERROR_AT_REPLYING_SERVICE';
 
+const { JSONCodec } = Nats;
+
 class Communication {
-  #natsClient;
+  #connection;
+
+  #codec = JSONCodec();
 
   constructor() {
-    this.#natsClient = Nats.connect({ url: process.env.NATS_URL, json: true });
-
-    this.#natsClient.on('connect', () => {
-      console.log('Nats connected.');
+    this.#connection = Nats.connect({
+      servers: process.env.NATS_URL,
+      timeout: TIMEOUT_MS,
+      waitOnFirstConnect: true,
     });
   }
 
   subscribe(serviceName, callback) {
     const topic = `${serviceName}.*`;
 
-    const subscriberId = this.#natsClient.subscribe(topic, { queue: serviceName }, (payload, replyTo) => {
-      callback(payload, (response) => {
-        const data = { success: false };
+    return new Promise((resolve, reject) => {
+      this.#connection
+        .then(async (nc) => {
+          const callbackSubscription = (error, message) => {
+            const data = { success: false };
 
-        if (response instanceof Error) {
-          const error = new Nats.NatsError(response.message, SERVICE_ERROR, response.stack || response.chainedError);
+            const payload = this.#codec.decode(message.data);
 
-          error.originName = response.code || response.constructor.name || error.constructor.name;
+            callback(payload, (response) => {
+              if (response instanceof Error) {
+                const e = new Error(response.message);
+                e.code = SERVICE_ERROR;
+                e.stack = response.stack;
+                e.chainedError = response.chainedError;
 
-          data.success = false;
-          data.error = error;
+                data.success = false;
+                data.error = e;
 
-          return this.#natsClient.publish(replyTo, data);
-        }
+                return message.respond(this.#codec.encode(data));
+              }
 
-        data.success = false;
+              if (!isNil(response)) {
+                data.success = true;
+                data.data = response;
+              }
 
-        if (!isNil(response)) {
-          data.data = response;
-        }
+              return message.respond(this.#codec.encode(data));
+            });
+          };
 
-        return this.#natsClient.publish(replyTo, data);
-      });
+          const subscription = nc.subscribe(topic, {
+            callback: callbackSubscription,
+            queue: topic,
+          });
+
+          resolve(subscription);
+        })
+        .catch(reject);
     });
-
-    return { topic, subscriberId };
   }
 
-  callTo(serviceName, functionName, payload) {
+  async callTo(serviceName, functionName, payload) {
     const topic = `${serviceName}.${functionName}`;
 
     const _payload = payload || {};
@@ -58,18 +73,30 @@ class Communication {
       _payload.nats = { serviceName, functionName };
     }
 
+    let responder;
+
     return new Promise((resolve, reject) => {
-      this.#natsClient.requestOne(topic, _payload, { max: MAX_LISTENER }, TIMEOUT_MS, (responder) => {
-        if (responder instanceof Nats.NatsError && responder.code === Nats.REQ_TIMEOUT) {
-          return reject(responder);
-        }
+      this.#connection
+        .then(async (nc) => nc.request(topic, this.#codec.encode(_payload), { noMux: true }))
+        .then((message) => {
+          const data = this.#codec.decode(message.data);
 
-        if (responder.code === SERVICE_ERROR) {
-          return reject(responder);
-        }
+          responder = data;
+        })
+        .catch((error) => {
+          responder = error;
+        })
+        .finally(() => {
+          if (responder instanceof Error) {
+            return reject(responder);
+          }
 
-        return resolve(responder);
-      });
+          if (responder.code === SERVICE_ERROR) {
+            return reject(responder);
+          }
+
+          return resolve(responder);
+        });
     });
   }
 }
